@@ -8,6 +8,14 @@ def login_user_view(data):
 	join_room(session['group'])
 	socketio.emit('alert room', session['user'] + " has joined the " + session['team'] + " team.", room=session['group'])
 
+@socketio.on('join red team')
+def join_red_team_view():
+	session['team'] = 'red'
+
+@socketio.on('join blue team')
+def join_red_team_view():
+	session['team'] = 'blue'
+
 @socketio.on('set spymaster')
 def become_spymaster_view():
 	#check that other users are not already spymasters

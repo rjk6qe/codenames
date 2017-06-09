@@ -1,3 +1,4 @@
+import codenames.models as models
 import random
 
 class Gameboard:
@@ -13,7 +14,7 @@ class Gameboard:
 	def __get_wordlist(develop_mode):
 		if develop_mode:
 			return __developer_words()
-		words = Word.query.order_by(func.random()).limit(25).all()
+		words = models.Word.query.order_by(func.random()).limit(25).all()
 		list_of_words = []
 		for word in words:
 			list_of_words.append(word.word)
@@ -35,7 +36,7 @@ class Gameboard:
 		gameboard['word_list'] = cls.__get_wordlist(True)
 		gameboard['click_map'] = [False] * 25
 		gameboard['starter'] = 'R' if gameboard['is_red'] else 'B'
-		return gameboard		
+		return gameboard
 
 	@classmethod
 	def click_gameboard(cls, gameboard, index):
