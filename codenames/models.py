@@ -19,11 +19,13 @@ class Group(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	name = db.Column(db.String(50), unique=True)
 	gameboard = db.Column(db.Text())
+	user_count = db.Column(db.Integer)
 	# users = relationship("User", back_populates="Groups")
 
 	def __init__(self, name, gameboard):
 		self.name = name
 		self.gameboard = gameboard
+		self.user_count = 0
 
 	def get_gameboard(self):
 		return self.gameboard

@@ -33,7 +33,6 @@ class Gameboard:
 	@classmethod
 	def __create_new_gameboard(cls):
 		gameboard = {}
-		gameboard['num_players'] = 0
 		gameboard['is_red'] = bool(random.randint(0,1))
 		gameboard['key'] = cls.__create_key(gameboard['is_red'])
 		gameboard['word_list'] = cls.__get_wordlist(False)
@@ -52,4 +51,3 @@ class Gameboard:
 	@classmethod
 	def get_new_gameboard(cls):
 		return cls.__create_new_gameboard()
-

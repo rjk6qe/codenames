@@ -33,10 +33,7 @@ class Group:
 		if cls.group_exists(group_name):
 			data = {}
 			data['gameboard'] = cls.__get_gameboard(group_name)
-			spymaster_dict = {}
-			spymaster_dict['red_spymaster'] = None
-			spymaster_dict['blue_spymaster'] = None
-			data['spymaster'] = spymaster_dict
+			data['num_players'] = cls.__get_group(group_name).user_count
 			return json.dumps(data)
 		else:
 			return None
@@ -54,3 +51,18 @@ class Group:
 		new_gameboard = Gameboard.click_gameboard(gameboard, index)
 		cls.set_game_data(group_name, json.dumps(new_gameboard[0]))
 		return new_gameboard[1]
+
+	@classmethod
+	def add_user(cls, group_name):
+		group = cls.__get_group(group_name)
+		group.user_count = group.user_count + 1
+		db.session.add(group)
+		db.session.commit()
+
+	@classmethod
+	def remove_user(cls, group_name):
+		group = cls.__get_group(group_name)
+		group.user_count = group.user_count - 1
+		db.session.add(group)
+		db.session.commit()
+

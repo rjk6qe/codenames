@@ -12,6 +12,15 @@ def user_login(username, groupname):
 	session['group'] = groupname
 	session['team'] = 'red'
 	join_room(groupname)
+	Group.add_user(session['group'])
+
+
+def user_logout(groupname):
+	leave_room(groupname)
+	Group.remove_user(groupname)
+	session.pop('user')
+	session.pop('group')
+	session.pop('team')
 
 @socketio.on('create group')
 def create_group_view(data):
@@ -32,7 +41,7 @@ def join_group_view(data):
 	if Group.group_exists(group_name):
 		print('group exists')
 		user_login(data['username'], data['groupname'])
-		emit('join room', Group.get_game_data(group_name), room=session['group'])
+		emit('join room', Group.get_game_data(group_name))
 	else:
 		socketio.emit('alert room', 'you cannot do that')
 
@@ -53,3 +62,8 @@ def vote_to_start_new_round(data):
 	else:
 		socketio.emit('alert room', room=session['group'])
 
+@socketio.on('disconnect')
+def disconnect():
+	socketio.emit('alert room', session['user'] + ' has left the group', room=session['group'])
+	Group.remove_member(session['group'])
+	user_logout(session['group'])
