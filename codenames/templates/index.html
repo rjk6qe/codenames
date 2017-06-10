@@ -1,0 +1,147 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>Codenames</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<link rel="stylesheet" href="{{url_for('static', filename='css/base.css')
+}}">
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+<script type="text/javascript">
+	
+</script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/app.js') }}"></script>
+</head>
+<body>
+
+<nav class="navbar navbar-default navbar-fixed-top" id="navbar">
+    <div class="container">
+	<ul class="nav navbar-nav navbar-left">
+		<!-- <li><button class="btn btn-primary navbar-btn" id="join_red_team">Join Red Team</button></li> -->
+		<li><a>Red Team: <b id="red_count">9</b></a></li>
+	</ul>
+
+	<!-- <div class="navbar navbar-nav">
+	<ul class="nav navbar-nav">
+	<li><button class="btn btn-primary navbar-btn" id="become spymaster" onclick="become_spymaster()">I'm the Spymaster</button></li>
+	<li><button class="btn btn-primary navbar-btn" id="new_game_button">New Game</button></li>
+	</ul>
+	</div>
+ -->
+	<ul class="nav navbar-nav navbar-right">
+		<li><a>Blue Team: <b id="blue_count">8</b></a></li>
+		<!-- <li><button class="btn btn-primary navbar-btn" id="join_blue_team">Join Blue Team</button></li> -->
+	</ul>
+
+	</div>
+</nav>
+
+<div class="modal in" id="login_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h3>Welcome to Codenames</h3>
+				<label>You must enter your name and enter a group name.</label>
+			</div>
+			<div class="modal-body">
+
+				<div id="join_modal">
+					<input placeholder="Enter Username" type="text" id="username" class="form-control">
+					<input placeholder="Enter Group Name" type="text" id="groupname" class="form-control">
+				</div>
+
+				<button id="join_button" class="btn btn-primary btn-block">Join Game</button>
+				<button id="create_button" class="btn btn-default btn-block">Create Game</button>
+
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal in" id="decide_team" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h2>Choose Your Team</h2>
+			</div>
+			<div class="modal-body">
+				<div id="choose_team">
+					<button class ="btn btn-primary" id="join_red_team_option">Red Team</button>
+					<button class ="btn btn-primary" id="join_blue_team_option">Blue Team</button>
+				</div>
+				<div id="show_spymaster" style="display:none">
+					<label><b id="current_red_spymaster"></b> is the Red Team Spymaster</label>
+					<label><b id="current_blue_spymaster"></b> is the Blue Team Spymaster</label>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal in" id="end_game_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h2><b id="end_game_winner">Team</b> Wins!</h2>
+			</div>
+			<div class="modal-body">
+				<div id="next_round_options" style="display:none">
+					<label>As winning spymaster, you decide whether to start a new game.</label>
+					<button id="start_new_round" class="btn btn-primary btn-block">Another Round</button>
+					<button id="end_group" class="btn btn-default btn-block">Close Group</button>
+				</div>
+				<div id="next_round_display" style="display:none">
+					<label>The winning spymaster will decide whether to start a new game.</label>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<div id="game_div" class="table-responsive">
+	<table id="game_board" class="table table-bordered">
+	<!-- <tbody> -->
+	<tr>
+		<td index=0></td>
+		<td index=1></td>
+		<td index=2></td>
+		<td index=3></td>
+		<td index=4></td>
+	</tr>
+	<tr>
+		<td index=5></td>
+		<td index=6></td>
+		<td index=7></td>
+		<td index=8></td>
+		<td index=9></td>
+	</tr>
+	<tr>
+		<td index=10></td>
+		<td index=11></td>
+		<td index=12></td>
+		<td index=13></td>
+		<td index=14></td>
+	</tr>
+	<tr>
+		<td index=15></td>
+		<td index=16></td>
+		<td index=17></td>
+		<td index=18></td>
+		<td index=19></td>
+	</tr>
+	<tr>
+		<td index=20></td>
+		<td index=21></td>
+		<td index=22></td>
+		<td index=23></td>
+		<td index=24></td>
+	</tr>
+	<!-- </tbody> -->
+	</table>
+
+</div>
+<div id="snackbar"></div>
+</body>
+</html>
