@@ -1,4 +1,7 @@
 from codenames import db
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import relationship
+
 
 class Word(db.Model):
 	__tablename__ = "Words"
@@ -13,8 +16,10 @@ class Word(db.Model):
 
 class Group(db.Model):
 	__tablename__ = "Groups"
-	name = db.Column(db.String(50), primary_key=True)
+	id = db.Column(db.Integer, primary_key=True)
+	name = db.Column(db.String(50), unique=True)
 	gameboard = db.Column(db.Text())
+	# users = relationship("User", back_populates="Groups")
 
 	def __init__(self, name, gameboard):
 		self.name = name
@@ -26,14 +31,14 @@ class Group(db.Model):
 	def get_name(self):
 		return self.name
 
-class User(db.Model):
-	__tablename__ = "User"
-	id = db.Column(db.Integer, primary_key=True)
-	username = db.Column(db.String(80))
-	team = db.Column(db.String(10))
-	is_spymaster = db.Column(db.Boolean)
-	group = db.relationship('Group')
+# class User(db.Model):
+# 	__tablename__ = "User"
+# 	id = db.Column(db.Integer, primary_key=True)
+# 	username = db.Column(db.String(80))
+# 	team = db.Column(db.String(10))
+# 	group_id = db.Column(db.String(50, ForeignKey('Groups.id')))
+# 	group = relationship("Group", back_populates="User")
 
-	def __init__(self, username, group):
-		self.username = username
-		self.group = group
+# 	def __init__(self, username, group):
+# 		self.username = username
+# 		self.group = group

@@ -1,3 +1,6 @@
+from flask import session
+from flask_socketio import join_room, leave_room
+
 from codenames import app, socketio
 
 @socketio.on('login user')

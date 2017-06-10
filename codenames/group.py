@@ -23,8 +23,8 @@ class Group:
 		if cls.group_exists(group_name):
 			group = models.Group.query.filter_by(name=group_name).first()
 		else:
-			group = 
-		group.gameboard = Gameboard.get_new_gameboard()
+			gameboard = Gameboard.get_new_gameboard()
+			group = models.Group(group_name, json.dumps(gameboard))
 		db.session.add(group)
 		db.session.commit()
 
@@ -37,7 +37,7 @@ class Group:
 			spymaster_dict['red_spymaster'] = None
 			spymaster_dict['blue_spymaster'] = None
 			data['spymaster'] = spymaster_dict
-			return json.loads(data)
+			return json.dumps(data)
 		else:
 			return None
 
@@ -52,4 +52,5 @@ class Group:
 	def click_group_gameboard(cls, group_name, index):
 		gameboard = cls.__get_gameboard(group_name)
 		new_gameboard = Gameboard.click_gameboard(gameboard, index)
-		cls.set_game_data(group_name, new_gameboard)
+		cls.set_game_data(group_name, json.dumps(new_gameboard[0]))
+		return new_gameboard[1]
