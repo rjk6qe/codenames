@@ -44,15 +44,17 @@ $(document).ready(function(){
 			App.createGroupButton = $("#create_button");
 			App.userName = $("#username");
 			App.groupName = $("#groupname");
+
+			App.winnerLabel = $("#end_game_winner");
+			App.winnerModal = $("#end_game_modal")
 		},
 
 		alertClickOccurred : function(data){
-			App.Gameboard.updateGameScore(data['color'])
+			App.Gameboard.updateGameScore(data['color'], data['team'], data['onLoad'])
 			App.Gameboard.showClickColor(data['index'], data['color']);
 		},
 
 		alertRoom : function(data){
-			console.log('alert room');
 			App.snackbar.html(data);
 			App.snackbar.attr('class', 'show');
 			setTimeout(function(){
@@ -61,11 +63,14 @@ $(document).ready(function(){
 		},
 
 		onWordClick : function(){
-			console.log('clicking word');
 			if(App.game_role == 'Agent'){
-				var selected = $(this);
-				var selected_index = $(selected).attr('index');
-				IO.socket.emit("click word", {'index': selected_index});
+				if(App.round_started){
+					var selected = $(this);
+					var selected_index = $(selected).attr('index');
+					IO.socket.emit("click word", {'index': selected_index});
+				} else{
+					console.log("the round is not started'");
+				}
 			}
 		},
 
@@ -90,7 +95,7 @@ $(document).ready(function(){
 				return [Math.floor(index/5), index % 5]
 			},
 
-			updateGameScore : function(color_abbr){
+			updateGameScore : function(color_abbr, team, onLoad){
 				var color = App.Gameboard.convertColor(color_abbr);
 				if(color == 'red' || color == 'blue'){
 					if(color == 'red'){
@@ -103,10 +108,13 @@ $(document).ready(function(){
 					var count = parseInt($(count_html).text());
 					count--;
 					if(count == 0){
-						// win(color);
-						console.log('win');
+						App[App.role].win(color);
 					}
 					$(count_html).text(count.toString());
+				}
+
+				if(color == 'black'){
+					App[App.role].win(App.Gameboard.oppositeColor(team), onLoad);
 				}
 			},
 
@@ -129,14 +137,24 @@ $(document).ready(function(){
 				return diff_color;
 			},
 
+			oppositeColor : function(color){
+				if(color == 'red'){
+					return 'blue';
+				}
+				if(color == 'blue'){
+					return 'red';
+				}
+			},
+
 			showClickColor : function(index, color){
 				var ij = App.Gameboard.calculate_reverse_index(index);
-				console.log(App.Gameboard.convertColor(color));
 				$(App.gameboard_table.find("tr:eq(" + ij[0].toString() + ") td:eq(" + ij[1].toString() + ")")).css('background-color', App.Gameboard.convertColor(color));
 
 			},
 
 			setUpBoard : function(data) {
+				App.round_started = true;
+
 				var word_list = data['word_list'];
 				var gameboard = data['key'];
 				var locations = data['click_map'];
@@ -154,7 +172,9 @@ $(document).ready(function(){
 						if(locations[index]){
 							App.alertClickOccurred(
 								{'index':$(td).attr('index'),
-								'color': $(td).attr('color')
+								'color': $(td).attr('color'),
+								'onLoad':true,
+								'team':'blue'
 								}
 							);
 						}
@@ -207,11 +227,44 @@ $(document).ready(function(){
 		},
 
 		Player : {
-			
+			win : function(color, onLoad){
+				console.log('as a player, the ' + color + ' team won.');
+
+				//as a player, view the voting screen
+				App.winnerLabel.text(color.charAt(0).toUpperCase() + color.substring(1, color.length) + " Team");
+				App.winnerModal.modal('show');
+			},
+
+			vote : function(data){
+				IO.socket.emit('vote', {'vote' : 'yes'});
+			}
+
+
 		},
 
 		Host : {
-			
+			win : function(color, onLoad){
+				console.log('as a host, the ' + color + ' team won.');
+				App.Player.win(color);
+
+				if(onLoad){
+					console.log('but, it occurred at another time');
+				} else{
+					IO.socket.emit('team won round', {'winner': color});
+				}
+			},
+
+			startNewRound : function(){
+				//in the case the group votes to start a new round, ping the server to make a new board for the current group
+				console.log('starting new round');
+				IO.socket.emit('start new round');
+			},
+
+			closeGroup : function(){
+				console.log('closing group');
+				//
+			},
+
 		},
 	};
 

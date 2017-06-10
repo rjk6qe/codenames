@@ -11,4 +11,4 @@ def index():
 def click_item(data):
 	print("index " + data['index'])
 	color = Group.click_group_gameboard(session['group'], int(data['index']))
-	socketio.emit('alert click', {'index' : data['index'], 'team' : session['team'], 'color' : color}, room=session['group'])
+	socketio.emit('alert click', {'index' : data['index'], 'team' : session['team'], 'color' : color, 'onLoad':False}, room=session['group'])

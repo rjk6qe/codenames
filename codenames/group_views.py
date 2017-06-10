@@ -37,7 +37,7 @@ def join_group_view(data):
 		socketio.emit('alert room', 'you cannot do that')
 
 @socketio.on('team won round')
-def team_won_round():
+def team_won_round(data):
 	#all users can now vote
 	pass
 
