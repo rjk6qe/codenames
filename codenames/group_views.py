@@ -62,8 +62,9 @@ def vote_to_start_new_round(data):
 	else:
 		socketio.emit('alert room', room=session['group'])
 
-@socketio.on('disconnect')
-def disconnect():
-	socketio.emit('alert room', session['user'] + ' has left the group', room=session['group'])
-	Group.remove_member(session['group'])
-	user_logout(session['group'])
+# @socketio.on('disconnect')
+# def disconnect():
+# 	if 'group' in session:
+# 		socketio.emit('alert room', session['user'] + ' has left the group', room=session['group'])
+# 		Group.remove_member(session['group'])
+# 		user_logout(session['group'])
