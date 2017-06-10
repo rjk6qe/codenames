@@ -8,6 +8,7 @@ $(document).ready(function(){
 			App.game_role = 'Agent'
 			App.team = undefined;
 			App.round_started = false;
+			localStorage.debug = '*';
 
 			IO.bindEvents();
 		},
@@ -220,8 +221,16 @@ $(document).ready(function(){
 					console.log('you are a host');
 				}
 
+				App.Group.joinTeam();
+
 				App.Gameboard.setUpBoard(json_data['gameboard']);
 				App.joinGroupModal.modal('hide');
+			},
+
+			joinTeam : function(){
+				var random = Math.random() >= .5;
+				App.team = random ? 'red' : 'blue';
+				console.log('assigning to team ' + App.team);
 			},
 
 		},
