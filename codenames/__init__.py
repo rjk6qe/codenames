@@ -7,7 +7,7 @@ import random
 
 app = Flask(__name__)
 socketio = SocketIO(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgres://dkurzncavtalhd:e1ed5e114531e4d412508c3612daf3cf9ef1a696764e8ca041080ca8061b8ec9@ec2-184-73-236-170.compute-1.amazonaws.com:5432/d1hgf1om6912pm"
+app.config['SQLALCHEMY_DATABASE_URI'] = "postgres://onqueetfxnebhf:334c1af97933892d50d159dbe859f6c2e41c96c116a68d05d90c3d47c1a93cb9@ec2-54-243-252-91.compute-1.amazonaws.com:5432/d58d83185633ra"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
