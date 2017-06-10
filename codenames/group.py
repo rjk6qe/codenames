@@ -54,6 +54,7 @@ class Group:
 
 	@classmethod
 	def add_user(cls, group_name):
+		print('adding user to ' + group_name)
 		group = cls.__get_group(group_name)
 		group.user_count = group.user_count + 1
 		db.session.add(group)
@@ -61,6 +62,7 @@ class Group:
 
 	@classmethod
 	def remove_user(cls, group_name):
+		print('removing user from ' + group_name)
 		group = cls.__get_group(group_name)
 		group.user_count = group.user_count - 1
 		db.session.add(group)

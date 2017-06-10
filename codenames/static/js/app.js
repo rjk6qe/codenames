@@ -212,8 +212,8 @@ $(document).ready(function(){
 
 			joinRoom : function(data){
 				json_data = JSON.parse(data);
-				console.log('joining room');
-				if(data['num_players'] > 1){
+				console.log(json_data['num_players'])
+				if(json_data['num_players'] > 1){
 					App.role = 'Player';
 					console.log('you are a player');
 				} else{

@@ -16,6 +16,7 @@ def user_login(username, groupname):
 
 
 def user_logout(groupname):
+	print('logging user out')
 	leave_room(groupname)
 	Group.remove_user(groupname)
 	session.pop('user')
@@ -62,9 +63,10 @@ def vote_to_start_new_round(data):
 	else:
 		socketio.emit('alert room', room=session['group'])
 
-# @socketio.on('disconnect')
-# def disconnect():
-# 	if 'group' in session:
-# 		socketio.emit('alert room', session['user'] + ' has left the group', room=session['group'])
-# 		Group.remove_member(session['group'])
-# 		user_logout(session['group'])
+@socketio.on('disconnect')
+def disconnect():
+	print('detected disconnect')
+	if 'group' in session:
+		print('disconnected user had a group')
+		socketio.emit('alert room', session['user'] + ' has left the group', room=session['group'])
+		user_logout(session['group'])
