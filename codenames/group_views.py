@@ -28,8 +28,8 @@ def create_group_view(data):
 	if Group.group_exists(group_name):
 		socketio.emit('alert room', 'you cannot do that')
 	else:
-		user_login(data['username'], data['groupname'])
 		Group.start_new_game(group_name)
+		user_login(data['username'], data['groupname'])
 		socketio.emit('alert room', session['user'] + " has joined the team.", room=session['group'])
 		emit('join room', Group.get_game_data(group_name))
 		# data = Group.start_new_game(group_name)
