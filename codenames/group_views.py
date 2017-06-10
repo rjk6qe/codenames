@@ -7,13 +7,16 @@ from codenames.gameboard import Gameboard
 import json
 
 
-def user_login(username, groupname):
+def set_user_role(role):
+	session['role'] = role
+
+def user_login(username, groupname, role):
+	set_user_role(role)
 	session['user'] = username
 	session['group'] = groupname
 	session['team'] = 'red'
 	join_room(groupname)
 	Group.add_user(session['group'])
-
 
 def user_logout(groupname):
 	print('logging user out')
@@ -22,6 +25,7 @@ def user_logout(groupname):
 	session.pop('user')
 	session.pop('group')
 	session.pop('team')
+	session.pop('role')
 
 @socketio.on('create group')
 def create_group_view(data):
@@ -30,7 +34,7 @@ def create_group_view(data):
 		socketio.emit('alert room', 'you cannot do that')
 	else:
 		Group.start_new_game(group_name)
-		user_login(data['username'], data['groupname'])
+		user_login(data['username'], data['groupname'], data['role'])
 		socketio.emit('alert room', session['user'] + " has joined the team.", room=session['group'])
 		emit('join room', Group.get_game_data(group_name))
 		# data = Group.start_new_game(group_name)
@@ -41,10 +45,14 @@ def join_group_view(data):
 	print('trying to join ' + group_name)
 	if Group.group_exists(group_name):
 		print('group exists')
-		user_login(data['username'], data['groupname'])
+		user_login(data['username'], data['groupname'], data['role'])
 		emit('join room', Group.get_game_data(group_name))
 	else:
 		socketio.emit('alert room', 'you cannot do that')
+
+@socketio.on('role select')
+def change_role_view(data):
+	set_user_role(data['role'])
 
 @socketio.on('team won round')
 def team_won_round(data):
@@ -65,8 +73,15 @@ def vote_to_start_new_round(data):
 
 @socketio.on('disconnect')
 def disconnect():
-	print('detected disconnect')
 	if 'group' in session:
-		print('disconnected user had a group')
-		socketio.emit('alert room', session['user'] + ' has left the group', room=session['group'])
+		user = session['user']
+		group = session['group']
+		role = session.get('role', 'no role')
 		user_logout(session['group'])
+		if role == 'Host':
+			data = json.loads(Group.get_game_data(group))
+			if int(data['num_players']) > 0:
+				socketio.emit('alert room', 'Host disconnected, rejoining room...', room=group)
+				socketio.emit('join room', json.dumps(data), room=group)
+		else:
+			socketio.emit('alert room', user + ' has left the group', room=group)

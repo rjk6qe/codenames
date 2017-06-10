@@ -8,6 +8,9 @@ $(document).ready(function(){
 			App.game_role = 'Agent'
 			App.team = undefined;
 			App.round_started = false;
+
+
+			App.turn = undefined;
 			localStorage.debug = '*';
 
 			IO.bindEvents();
@@ -17,6 +20,7 @@ $(document).ready(function(){
 			IO.socket.on('alert room', App.alertRoom );
 			IO.socket.on('alert click', App.alertClickOccurred );
 			IO.socket.on('join room', App.Group.joinRoom );
+			IO.socket.on('host disconnected', App.Group.findNewHost );
 		},
 	};
 
@@ -202,7 +206,7 @@ $(document).ready(function(){
 				console.log('creating group');
 				App.role = 'Host';
 				IO.socket.emit(
-					'create group', 
+					'create group',
 					{
 						'username' : App.userName.val(), 
 						'groupname': App.groupName.val(),
@@ -216,9 +220,11 @@ $(document).ready(function(){
 				if(json_data['num_players'] > 1){
 					App.role = 'Player';
 					console.log('you are a player');
+					IO.socket.emit('role select', {'role' : App.role})
 				} else{
 					App.role = 'Host';
 					console.log('you are a host');
+					IO.socket.emit('role select', {'role' : App.role})
 				}
 
 				App.Group.joinTeam();
@@ -233,6 +239,10 @@ $(document).ready(function(){
 				console.log('assigning to team ' + App.team);
 			},
 
+			findNewHost : function(){
+				console.log('host was disconnected, rejoining room');
+			},
+
 		},
 
 		Player : {
@@ -240,8 +250,18 @@ $(document).ready(function(){
 				console.log('as a player, the ' + color + ' team won.');
 
 				//as a player, view the voting screen
-				App.winnerLabel.text(color.charAt(0).toUpperCase() + color.substring(1, color.length) + " Team");
-				App.winnerModal.modal('show');
+				if(!onLoad){
+					App.winnerLabel.text(color.charAt(0).toUpperCase() + color.substring(1, color.length) + " Team");
+				} else{
+					if(App.role == 'Host'){
+						App.winnerLabel.text("This group ended on a won game. Would you like to restart?");
+					} else{
+						App.winnerLabel.text("This group ended on a won game. Voting restarting.");
+					}
+				}
+
+				App.winnerModal.modal('show');	
+				
 			},
 
 			vote : function(data){
