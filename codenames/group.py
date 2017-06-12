@@ -5,34 +5,40 @@ import json
 
 class Group:
 
-
-	@staticmethod
-	def __get_group(group_name):
-		return models.Group.query.filter_by(name=group_name).first()
-
-	@staticmethod
-	def group_exists(group_name):
-		return models.Group.query.filter_by(name=group_name).count() != 0
+	object_model = models.Group
 
 	@classmethod
-	def __get_gameboard(cls, group_name):
-		return json.loads(cls.__get_group(group_name).gameboard)
+	def __get_group(cls, group_name):
+		return cls.object_model.query.filter_by(name=group_name).first()
+
+	@classmethod
+	def group_exists(cls, group_name):
+		return cls.object_model.query.filter_by(name=group_name).count() != 0
 
 	@classmethod
 	def get_num_users(cls, group_name):
 		group = cls.__get_group(group_name)
-		return group.get_user_count()
+		return group.red_count + group.blue_count
 
 	@classmethod
 	def start_new_game(cls, group_name):
+		print('starting new game for group ' + group_name)
+
+		new_obj = cls.object_model(group_name, json.dumps(Gameboard.get_new_gameboard()))
+
 		if cls.group_exists(group_name):
 			group = cls.__get_group(group_name)
-			group.gameboard = json.dumps(Gameboard.get_new_gameboard())
-		else:
-			gameboard = json.dumps(Gameboard.get_new_gameboard())
-			group = models.Group(group_name, gameboard)
+			new_obj.red_wins = group.red_wins
+			new_obj.blue_wins = new_obj.blue_wins
+			new_obj.red_count = group.red_count
+			new_obj.blue_count = group.blue_count
+			new_obj.max_wins = group.max_wins
+			new_obj.users = group.users
 
-		db.session.add(group)
+			db.session.delete(group)
+			db.session.commit()
+
+		db.session.add(new_obj)
 		db.session.commit()
 
 	@classmethod
@@ -44,23 +50,22 @@ class Group:
 			data['score'] = cls.get_current_score(group_name)
 			data['starter'] = group.get_starter()
 			data['current_turn'] = group.get_current_turn()
+			data['clicks_remaining'] = group.clicks_remaining
 			return data
 		else:
 			return None
 
 	@classmethod
-	def set_game_data(cls, group_name, data):
-		group = cls.__get_group(group_name)
-		group.gameboard = data
-		db.session.add(group)
-		db.session.commit()
-
-	@classmethod
 	def click_group_gameboard(cls, group_name, index):
-		gameboard = cls.__get_gameboard(group_name)
-		new_gameboard = Gameboard.click_gameboard(gameboard, index)
-		cls.set_game_data(group_name, json.dumps(new_gameboard[0]))
-		return new_gameboard[1]
+		group = cls.__get_group(group_name)
+		gameboard = group.get_gameboard()
+		if group.clicks_remaining:
+			click_return_dict = Gameboard.click_gameboard(gameboard, index)
+			group.gameboard = json.dumps(click_return_dict['gameboard'])
+			db.session.add(group)
+			db.session.commit()
+			return click_return_dict['color']
+		return None
 
 	@classmethod
 	def join_team(cls, user_name, group_name, color):
@@ -96,6 +101,12 @@ class Group:
 		group = cls.__get_group(group_name)
 		return {'red': group.get_red_score(), 'blue':group.get_blue_score()}
 
+
+	@classmethod
+	def get_clicks_remaining(cls, group_name):
+		group = cls.__get_group(group_name)
+		return group.clicks_remaining
+
 	@classmethod
 	def switch_turn(cls, group_name):
 		group = cls.__get_group(group_name)
@@ -107,6 +118,7 @@ class Group:
 		db.session.commit()
 
 		return {'current_turn' : group.current_turn}
+
 
 	@classmethod
 	def update_score(cls, group_name, team, color_clicked):
@@ -136,6 +148,15 @@ class Group:
 			group.red_wins = group.red_wins + 1
 		if team == 'blue':
 			group.blue_wins = group.blue_wins + 1
+
+		db.session.add(group)
+		db.session.commit()
+
+	@classmethod
+	def set_clue(cls, group_name, clue, guesses):
+		group = cls.__get_group(group_name)
+		group.clue = clue
+		group.clicks_remaining = guesses
 
 		db.session.add(group)
 		db.session.commit()

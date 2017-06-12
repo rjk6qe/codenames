@@ -5,6 +5,8 @@ import random
 
 class Gameboard:
 
+	word_model = models.Word
+
 	@staticmethod
 	def __abbr_to_color(color):
 		if color == 'R':
@@ -15,15 +17,9 @@ class Gameboard:
 			return 'green'
 		if color == 'A':
 			return 'black'
+		print('none of the above')
+		print(color)
 		return None
-
-	@classmethod
-	def __get_wordlist(cls, develop_mode):
-		words = models.Word.query.order_by(func.random()).limit(25).all()
-		list_of_words = []
-		for word in words:
-			list_of_words.append(word.word.split('.')[random.randint(0,1)])
-		return list_of_words
 
 	@staticmethod
 	def __create_key(is_red):
@@ -32,6 +28,14 @@ class Gameboard:
 		gameboard = (['R'] * red) + (['B'] * blue) + ['A'] + (['C'] * 7)
 		random.shuffle(gameboard)
 		return gameboard
+
+	@classmethod
+	def __get_wordlist(cls, develop_mode):
+		words = cls.word_model.query.order_by(func.random()).limit(25).all()
+		list_of_words = []
+		for word in words:
+			list_of_words.append(word.word.split('.')[random.randint(0,1)])
+		return list_of_words
 
 	@classmethod
 	def get_new_gameboard(cls):
@@ -49,4 +53,4 @@ class Gameboard:
 		click_map[index] = True
 		key = gameboard['key']
 		color = key[index]
-		return (gameboard, cls.__abbr_to_color(color))
+		return {'gameboard' : gameboard, 'color':cls.__abbr_to_color(color)}

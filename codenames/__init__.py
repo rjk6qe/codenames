@@ -44,6 +44,11 @@ def user_group_data(group_name):
 	print(json.dumps(return_data))
 	return json.dumps(return_data)
 
+
+@app.route('/play/')
+def index():
+	return render_template('index.html')
+
 @socketio.on('connect')
 def connect():
 	print("CONNECTING")
@@ -70,5 +75,5 @@ def disconnect():
 			socketio.emit('alert room', session['user'] + ' has left the group', room=session['group'])
 
 import codenames.group_views
-import codenames.user_views
 import codenames.game_views
+import codenames.user_views

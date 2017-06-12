@@ -28,6 +28,7 @@ $(document).ready(function(){
 		bindEvents : function(){
 			IO.socket.on('alert room', App.alertRoom );
 			IO.socket.on('alert click', App.Gameboard.alertClickOccurred );
+			IO.socket.on('rejoin room', App.Group.alertRejoinRoom );
 			IO.socket.on('join room', App.Group.alertJoinRoom );
 			IO.socket.on('switch turn', App.Group.alertSwitchTurn );
 			IO.socket.on('round over', App.Group.alertRoundOver );
@@ -65,6 +66,7 @@ $(document).ready(function(){
 
 
 			App.nextRoundSettings = $("#next_round_options");
+			App.nextRoundWaiting = $("#next_round_display");
 			App.nextRoundButton = $("#start_new_round");
 
 			App.endGameLabel = $("#end_game_beginning");
@@ -77,7 +79,7 @@ $(document).ready(function(){
 			App.currentRoleLabel = $("#your_role");
 
 			App.statusLabel = $("#status");
-			App.numClicksLabel = $("#clicks_remaining");
+			App.numClicksLabel = $("#remaining_clicks");
 		},
 
 		alertRoom : function(string){
@@ -119,19 +121,6 @@ $(document).ready(function(){
 			}
 		},
 
-		alertSetUpAgentTurn : function(json_string){
-			data = JSON.parse(json_string);
-
-
-			App.current_clue = data['clue'];						
-			App.clicksRemaining = data['guesses'] + 1;
-			App.clueSubmitted = true;
-
-			App.currentClueLabel.text("Clue: " + App.current_clue);
-			App.numClicksLabel.text("Clicks: " + App.clicksRemaining.toString());
-
-			//set App.teamTurn to the right team
-		},
 
 		Gameboard : {
 
@@ -199,7 +188,7 @@ $(document).ready(function(){
 
 						var td = App.gameboard_table.find("tr:eq(" + i.toString() + ") td:eq(" + j.toString() + ")")
 						var index = App.Gameboard.calculate_index(i,j);
-						var td = $(td).attr("color", gameboard[index]).attr("clicked", click_map[index]).text(word_list[index]);
+						var td = $(td).attr("color", gameboard[index]).attr("clicked", click_map[index]).css('background-color', 'white').text(word_list[index]);
 
 
 						if(click_map[index]){
@@ -213,16 +202,21 @@ $(document).ready(function(){
 				console.log(json_string);
 				//expects score dict, index, color
 				var data = JSON.parse(json_string);
+				App.Gameboard.updateClickCount(data['clicks_remaining']);
 				App.Gameboard.updateGameScore(data['score'], false);
 				App.Gameboard.showClickColor(data['index'], data['color']);
 			},
+
+			updateClickCount : function(clicks_remaining){
+				App.clicks_remaining = clicks_remaining + 1;
+				App.numClicksLabel.text('Clicks: ' + App.clicks_remaining);
+			}
 		},
 
 
 		Group : {
 			clickJoinGroup : function(){
 				console.log('joining group');
-				App.role = 'Player';
 				IO.socket.emit(
 					'join group', 
 					{
@@ -233,7 +227,6 @@ $(document).ready(function(){
 
 			clickCreateGroup : function(){
 				console.log('creating group');
-				App.role = 'Host';
 				IO.socket.emit(
 					'create group',{
 						'username' : App.userName.val(), 
@@ -246,21 +239,19 @@ $(document).ready(function(){
 			},
 
 			alertJoinRoom : function(json_string){
-				App.clicksRemaining = 500;
 
 				var json_data = JSON.parse(json_string);
 				console.log(json_data);
 
-				console.log('updating score in joinRoom');
-				App.Gameboard.updateGameScore(json_data['score'], true);
-
-
 				App.role = json_data['role'];
 				App.team = json_data['team'];
 				App.teamTurn = json_data['current_turn'];
+				App.clicksRemaining = json_data['clicks_remaining'];
 
+				App.Gameboard.updateGameScore(json_data['score'], true);
 				App.Gameboard.setUpBoard(json_data['gameboard']);
 				App.joinGroupModal.modal('hide');
+				App.winnerModal.modal('hide');
 				App[App.role].startRound();
 			},
 
@@ -271,10 +262,28 @@ $(document).ready(function(){
 				App.currentTurnLabel.text('The ' + App.teamTurn + ' team is going right now...');
 			},
 
+			alertRejoinRoom : function(){
+				App.Group.clickJoinGroup()
+			},
+
 			alertRoundOver : function(json_string){
 				var data = JSON.parse(json_string);
 				App[App.role].win(data['winner'], false);
-			}
+			},
+			alertSetUpAgentTurn : function(json_string){
+				console.log(json_string);
+				data = JSON.parse(json_string);
+
+
+				App.current_clue = data['clue'];						
+				App.clicksRemaining = data['guesses'] + 1;
+				App.clueSubmitted = true;
+
+				App.currentClueLabel.text("Clue: " + App.current_clue);
+				App.numClicksLabel.text("Clicks: " + App.clicksRemaining.toString());
+
+				//set App.teamTurn to the right team
+			},
 
 		},
 
@@ -285,6 +294,10 @@ $(document).ready(function(){
 				//as a player, view the voting screen
 				if(!onLoad){
 					App.winnerLabel.text(color.charAt(0).toUpperCase() + color.substring(1, color.length) + " Team");
+					if(App.role == 'Player'){
+						App.nextRoundWaiting.attr('style', 'display:block');
+
+					}
 				} else{
 					if(App.role == 'Host'){
 						App.endGameLabel.text("This group ended on a won game. Would you like to restart?");
@@ -316,10 +329,12 @@ $(document).ready(function(){
 			win : function(color, onLoad){
 				console.log('as a host, the ' + color + ' team won.');
 				App.Player.win(color, onLoad);
+				App.nextRoundSettings.attr('style', 'display:block');
 			},
 
 			startRound : function(){
 				App.Player.startRound();
+				App.winnerModal.modal('hide');
 			},
 		},
 	};
