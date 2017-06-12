@@ -1,0 +1,48 @@
+host creates game
+	host decides number of players
+		or server sets max to be 8
+
+	server assigns host random team, tell server about this - done
+
+	server creates gameboard, key - done
+	server decides starter - done
+
+	server tells everyone to enter game - done
+
+	enter game - done
+	server assigns each new member a team - done
+		make teams even, then randomly assign - done
+			
+
+	startRound()
+
+		players see list of players
+			can view other players and those on their teams
+			
+		host sees list of players in group
+			choose spymasters, pings server
+			tell everyone to join room
+
+
+once everyone starts game
+	show series stats (keep track of wins/losses in db)
+
+	start new round (keep track of team in db)
+		alert players of current turn
+		prompt team spymaster to enter word and number to choose
+			alert all players of entered word
+			host starts timer for 3 minutes
+				ping server when timer is up to enter
+
+		set available clicks to spymaster's number + 1
+
+		for each click, ping server to verify it's right
+			if right:
+				decrement available clicks until zero or select "end turn"
+			if wrong:
+				set available clicks to zero
+
+		when a team wins, end round, update series stats
+
+
+

@@ -6,16 +6,19 @@ import random
 class Gameboard:
 
 	@staticmethod
-	def __developer_words():
-		w = []
-		for i in range(0, 25):
-			w.append(str(i))
-		return w
+	def __abbr_to_color(color):
+		if color == 'R':
+			return 'red'
+		if color == 'B':
+			return 'blue'
+		if color == 'C':
+			return 'green'
+		if color == 'A':
+			return 'black'
+		return None
 
 	@classmethod
 	def __get_wordlist(cls, develop_mode):
-		if develop_mode:
-			return cls.__developer_words()
 		words = models.Word.query.order_by(func.random()).limit(25).all()
 		list_of_words = []
 		for word in words:
@@ -31,7 +34,7 @@ class Gameboard:
 		return gameboard
 
 	@classmethod
-	def __create_new_gameboard(cls):
+	def get_new_gameboard(cls):
 		gameboard = {}
 		gameboard['is_red'] = bool(random.randint(0,1))
 		gameboard['key'] = cls.__create_key(gameboard['is_red'])
@@ -46,8 +49,4 @@ class Gameboard:
 		click_map[index] = True
 		key = gameboard['key']
 		color = key[index]
-		return (gameboard, color)
-
-	@classmethod
-	def get_new_gameboard(cls):
-		return cls.__create_new_gameboard()
+		return (gameboard, cls.__abbr_to_color(color))
